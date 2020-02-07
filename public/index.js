@@ -80,7 +80,7 @@
      * @returns {ServiceWorker registration}
      */
     function registerServiceWorker (file) {
-        return window.serviceWorker.register(file)
+        return navigator.serviceWorker.register(file)
     }
     /**
      *
@@ -101,7 +101,7 @@
     }
     /**
      *
-     *
+     * server存储客户端subscription信息
      * @param {serviceWorker subscription} body
      * @param {string} url
      * @returns {Promise}
@@ -134,7 +134,7 @@
         })
     }
     if ('serviceWorker' in navigator && 'PushManager' in window) {
-        var publicKey = 'BOEQSjdhorIf8M0XFNlwohK3sTzO9iJwvbYU-fuXRF0tvRpPPMGO6d_gJC_pUQwBT7wD8rKutpNTFHOHN3VqJ0A';
+        var publicKey = 'BMKYFHAL0G0nBe7bhh8xyMr2Z6GL9IFMcYF4Dv9W2mLF8XG2vCvYdqA8cuJULz3LuQeAxjZ5tS5dxoabNKmQ3b4';
         // 注册service worker
         registerServiceWorker('./sw.js').then(function(registration) {
             console.log('Service worker注册成功')
@@ -144,6 +144,7 @@
             let body = {subscription}
             body.uniqueid = new Date().getTime()
             console.log('uniqueid', body.uniqueid)
+            // 向server发起client的subscription信息
             return sendSubscriptionToServer(JSON.stringify(body))
         }).then(res => {
             console.log(res)

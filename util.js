@@ -62,3 +62,15 @@ module.exports.findAll = () => {
         })
     })
 } 
+
+module.exports.remove = obj => {
+    return new Promise((resolve, reject) => {
+        db.remove(obj, {multi: true}, (err, num) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(num)
+        })
+    })
+}

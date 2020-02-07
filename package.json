@@ -17,6 +17,12 @@
   },
   "homepage": "https://github.com/yisha0307/PWA-demo#readme",
   "dependencies": {
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa-router": "^8.0.7",
+    "koa-static": "^5.0.0",
+    "nedb": "^1.8.0",
+    "request": "^2.88.0",
     "web-push": "^3.4.3"
   }
 }

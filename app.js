@@ -2,6 +2,7 @@ const Koa = require('koa')
 const Router = require('koa-router')
 const serve = require('koa-static')
 const koaBody = require('koa-body')
+const webpush = require('web-push')
 const get = require('./util').get
 const app = new Koa()
 const router = new Router()
@@ -16,6 +17,25 @@ router.get('/book', async ctx => {
     const result = await get(url)
     ctx.body = result
 })
+/**
+ * 使用web-push进行消息推送
+ */
+const options = {
+    proxy: "http://localhost:1087"
+}
+/**
+ * VAPID for web-push
+ * web-push generate-vapid-keys --json：生成public key和private key
+ */
+let vapidKeys = {
+    "publicKey":"BMKYFHAL0G0nBe7bhh8xyMr2Z6GL9IFMcYF4Dv9W2mLF8XG2vCvYdqA8cuJULz3LuQeAxjZ5tS5dxoabNKmQ3b4",
+    "privateKey":"3sz831s3Ais0epMujW6S-5I7njnPpSYHtdjzcPy6uiA"
+}
+webpush.setVapidDetails(
+    'mailto:chenchen9037@126.com',
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+)
 /** 
  * 提交subscription信息，并保存
 */
@@ -47,6 +67,18 @@ router.post('/push', koaBody(), async ctx => {
  * @param {Object} [data={}]
  */
 function pushMessage (subscription, data = {}) {
+    webpush.sendNotification(subscription, data, options).then(data => {
+        console.log('push service的相应数据：', JSON.stringify(data))
+        return
+    }).catch(err => {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+            // 410 || 404： subscription已经无效
+            return util.remove(subscription)
+        } else {
+            console.log(subscription)
+            console.log(err)
+        }
+    })
 }
 app.use(router.routes())
 app.use(serve(__dirname + '/public')) // 放置静态资源

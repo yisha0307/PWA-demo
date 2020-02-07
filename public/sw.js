@@ -72,4 +72,13 @@ self.addEventListener('activate', e => {
 // push(推送消息)
 // notification(展示提醒)
 // push service当用户离线的时候，可以帮助保存消息队列，直到联网后再发送给他们
-
+self.addEventListener('push', e => {
+    let data = e.data
+    if (data) {
+        data = data.json()
+        console.log('push的数据为', data)
+        self.ServiceWorkerRegistration.showNotification(data.text)
+    } else {
+        console.log('push没有任何数据')
+    }
+})
