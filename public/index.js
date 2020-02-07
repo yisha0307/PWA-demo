@@ -92,8 +92,9 @@
     function subscribeUserToPush (registration, publicKey) {
         let subscribeOptions = {
             userVisibleOnly: true, // 推送时是不是有消息提醒
-            applicationServerKey: window.urlBase64ToUnit8Array(publicKey)
+            applicationServerKey: window.urlBase64ToUint8Array(publicKey)
         }
+        // 浏览器会跳出“显示通知”的选项
         return registration.pushManager.subscribe(subscribeOptions).then(function (pushSubscription) {
             console.log('Received pushSubscription: ', JSON.stringify(pushSubscription))
             return pushSubscription
@@ -106,33 +107,35 @@
      * @param {string} url
      * @returns {Promise}
      */
-    function sendSubscriptionToServer (body, url) {
-        url = url || '/subscription'
-        return new Promise((resolve, reject) => {
-            var xhr = new XMLHttpRequest()
-            xhr.timeout = 60000
+    function sendSubscriptionToServer(body, url) {
+        url = url || '/subscription';
+        return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.timeout = 60000;
             xhr.onreadystatechange = function () {
-                let response = {}
+                var response = {};
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     try {
-                        response = JSON.parse(xhr.responseText)
+                        response = JSON.parse(xhr.responseText);
                     }
                     catch (e) {
-                        response = xhr.responseText
+                        response = xhr.responseText;
                     }
-                    resolve(response)
-                } else if (xhr.readyState === 4) {
-                    resolve()
+                    resolve(response);
                 }
-                xhr.onabort = reject
-                xhr.onerror = reject
-                xhr.ontimeout = reject
-                xhr.open('POST', url, true)
-                xhr.sendRequestHeader('Content-Type', 'application/json')
-                xhr.send(body)
-            }
-        })
+                else if (xhr.readyState === 4) {
+                    resolve();
+                }
+            };
+            xhr.onabort = reject;
+            xhr.onerror = reject;
+            xhr.ontimeout = reject;
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(body);
+        });
     }
+    
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         var publicKey = 'BMKYFHAL0G0nBe7bhh8xyMr2Z6GL9IFMcYF4Dv9W2mLF8XG2vCvYdqA8cuJULz3LuQeAxjZ5tS5dxoabNKmQ3b4';
         // 注册service worker

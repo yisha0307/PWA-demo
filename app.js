@@ -1,3 +1,4 @@
+const util = require('./util')
 const Koa = require('koa')
 const Router = require('koa-router')
 const serve = require('koa-static')
@@ -40,12 +41,12 @@ webpush.setVapidDetails(
  * 提交subscription信息，并保存
 */
 router.post('/subscription', koaBody(), async ctx => {
-    let body = ctx.request.body
-    await util.saveRecord(body)
+    let body = ctx.request.body;
+    await util.saveRecord(body);
     ctx.response.body = {
         status: 0
-    }
-})
+    };
+});
 /**
  * 消息推送API，可以在管理后台进行调用
  * 为了方便起见，直接post一个请求来查看效果
