@@ -1,0 +1,22 @@
+{
+  "name": "pwa-demo",
+  "version": "1.0.0",
+  "description": "a simple demo for PWA learning",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yisha0307/PWA-demo.git"
+  },
+  "author": "yisha chen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yisha0307/PWA-demo/issues"
+  },
+  "homepage": "https://github.com/yisha0307/PWA-demo#readme",
+  "dependencies": {
+    "web-push": "^3.4.3"
+  }
+}
