@@ -77,7 +77,7 @@ self.addEventListener('push', e => {
     if (data) {
         data = data.json()
         console.log('push的数据为', data)
-        self.ServiceWorkerRegistration.showNotification(data.text)
+        self.registration.showNotification(data.text)
     } else {
         console.log('push没有任何数据')
     }

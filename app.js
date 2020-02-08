@@ -52,14 +52,19 @@ router.post('/subscription', koaBody(), async ctx => {
  * 为了方便起见，直接post一个请求来查看效果
  */
 router.post('/push', koaBody(), async ctx => {
-    let payload = ctx.request.body
-    let list = await util.findAll()
-    let status = list.length ? 0 : -1
-    list.map(subscription => pushMessage(subscription, JSON.stringify(payload)))
+    let payload = ctx.request.body;    
+    let list = await util.findAll();
+    let status = list.length > 0 ? 0 : -1;
+
+    for (let i = 0; i < list.length; i++) {
+        let subscription = list[i];
+        pushMessage(subscription, JSON.stringify(payload));
+    }
+
     ctx.response.body = {
         status
-    }
-})
+    };
+});
 
 /**
  * 使用webpush
@@ -67,20 +72,22 @@ router.post('/push', koaBody(), async ctx => {
  * @param {ServiceWorker subscription} subscription
  * @param {Object} [data={}]
  */
-function pushMessage (subscription, data = {}) {
-    webpush.sendNotification(subscription, data, options).then(data => {
-        console.log('push service的相应数据：', JSON.stringify(data))
-        return
+function pushMessage(subscription, data = {}) {
+    webpush.sendNotification(subscription, data).then(data => {
+        console.log('push service的相应数据:', JSON.stringify(data));
+        return;
     }).catch(err => {
+        // 判断状态码，440和410表示失效
         if (err.statusCode === 410 || err.statusCode === 404) {
-            // 410 || 404： subscription已经无效
-            return util.remove(subscription)
-        } else {
-            console.log(subscription)
-            console.log(err)
+            return util.remove(subscription);
+        }
+        else {
+            console.log(subscription);
+            console.log(err);
         }
     })
 }
+
 app.use(router.routes())
 app.use(serve(__dirname + '/public')) // 放置静态资源
 app.listen(8086, () => {
