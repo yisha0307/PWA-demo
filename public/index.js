@@ -84,7 +84,7 @@
     }
     /**
      *
-     * 发起订阅
+     * 向浏览器发起订阅
      * @param {serviceWorker registration} registration
      * @param {string} publicKey
      * @returns {ServiceWorker subscription}
@@ -144,9 +144,9 @@
             // 开启客户端的消息推送订阅功能
             return subscribeUserToPush(registration, publicKey)
         }).then(subscription => {
-            let body = {subscription}
-            body.uniqueid = new Date().getTime()
-            console.log('uniqueid', body.uniqueid)
+            // let body = {subscription}
+            // body.uniqueid = new Date().getTime()
+            // console.log('uniqueid', body.uniqueid)
             // 向server发起client的subscription信息
             return sendSubscriptionToServer(JSON.stringify(subscription))
         }).then(res => {
