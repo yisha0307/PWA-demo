@@ -135,11 +135,54 @@
             xhr.send(body);
         });
     }
+    // 获得notification的用户授权
+    function askPermission () {
+        return new Promise(function (resolve, reject) {
+            var permissionResult = Notification.requestPermission(function (result) {
+                resolve(result)
+            })
+            if (permissionResult) {
+                permissionResult.then(resolve, reject)
+            }
+        }).then(function (permissionResult) {
+            if (permissionResult !== 'granted') {
+                // granted: 用户允许了通知的显示
+                // denied: 用户拒绝了通知的显示
+                // default
+                throw new Error('We weren\'t granted permission.')
+            }
+        })
+    }
 
     if ('serviceWorker' in navigator && 'PushManager' in window) {
         var publicKey = 'BMKYFHAL0G0nBe7bhh8xyMr2Z6GL9IFMcYF4Dv9W2mLF8XG2vCvYdqA8cuJULz3LuQeAxjZ5tS5dxoabNKmQ3b4';
         // 注册service worker
-        registerServiceWorker('./sw.js').then(function(registration) {
+        registerServiceWorker('./sw.js').then(function (registration) {
+            return Promise.all([
+                registration,
+                askPermission() // return promise
+            ])
+        }).then(function(result) {
+            const registration = result[0]
+            // 添加提醒功能
+            document.getElementById('notification-btn').addEventListener('click', function () {
+                var title = 'PWA学习'
+                var options = {
+                    body: '邀请你一起学习',
+                    icon: '/img/icons/book-128.png',
+                    actions: [{
+                        action: 'show-book',
+                        title: '去看看'
+                    }, {
+                        action: 'contact-me',
+                        title: '联系我'
+                    }],
+                    tag: 'pwa-starter',
+                    renotify: true
+                };
+                // 进行消息提醒
+                registration.showNotification(title, options);
+            })
             console.log('Service worker注册成功')
             // 开启客户端的消息推送订阅功能
             return subscribeUserToPush(registration, publicKey)

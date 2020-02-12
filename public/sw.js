@@ -82,3 +82,23 @@ self.addEventListener('push', e => {
         console.log('push没有任何数据')
     }
 })
+
+// 响应用户对于提醒框的点击事件
+self.addEventListener('notificationclick', function (e) {
+    const action = e.action
+    console.log(`action tag: ${e.notification.tag}`, `action: ${action}`)
+
+    switch (action) {
+        case 'show-book':
+            console.log('show book')
+            return
+        case 'contact-me':
+            console.log('contact me')
+            break
+        default:
+            console.log(`未处理的action: ${e.action}`)
+            action = 'default'
+            break
+    }
+    e.notification.close()
+})
