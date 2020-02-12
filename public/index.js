@@ -135,6 +135,24 @@
             xhr.send(body);
         });
     }
+    // 监听service worker的postmessage
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', function (e) {
+            const action = e.action
+            console.log(`receive post-message from sw, action is '${e.data}'`)
+            switch (action) {
+                case 'show-book':
+                    location.href = 'https://book.douban.com/subject/20515024/'
+                    break
+                case 'contact-me':
+                    location.href = 'mailto:someone@sample.com'
+                    break
+                default:
+                    document.querySelector('.panel').classList.add('show')
+                    break
+            }
+        })
+    }
     // 获得notification的用户授权
     function askPermission () {
         return new Promise(function (resolve, reject) {
