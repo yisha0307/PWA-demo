@@ -136,3 +136,60 @@ self.addEventListener('notificationclick', function (e) {
         })
     )
 })
+
+// add sync 监听事件
+// 因为放在service worker里了，所以可以在网页关闭的时候继续做后台请求
+class SimpleEvent {
+    // 类似一个最简单的eventBus
+    constructor () {
+        this.listeners = {}
+    }
+    once (tag, cb) {
+        this.listeners[tag] || (this.listeners[tag] = [])
+        this.listeners[tag].push(cb)
+    }
+    trigger (tag, data) {
+        this.listeners[tag] = this.listeners[tag] || []
+        let listener
+        while (listener = this.listeners[tag].shift()) {
+            listener(data)
+        }
+    }
+}
+const simpleEvent = new SimpleEvent()
+self.addEventListener('sync', function (e) {
+    console.log(`service worker需要进行后台同步，tag: ${e.tag}`)
+    const init = {
+        method: 'GET'
+    }
+    // 用e.tag来判断client触发的不同sync事件
+    if (e.tag === 'sample_sync') {
+        // 因为e.waitUntil只接受promise，所以要对simpleEvent.once包装一下
+        let msgPromise = new Promise((resolve, reject) => {
+            simpleEvent.once('bgsync', function (data) {
+                resolve(data)
+            })
+            // 5秒超时
+            setTimeout(resolve, 5000);
+        })
+
+        e.waitUntil(
+            msgPromise.then(function (data) {
+                var name = data && data.name ? data.name : 'anonymous'
+                const request = new Request(`sync?name=${name}`, init)
+                return fetch(request)
+            }).then(function (response) {
+                response.json().then(console.log.bind(console))
+                return response
+            })
+        )
+    }
+})
+
+self.addEventListener('message', function (e) {
+    const data = JSON.parse(e.data)
+    const {type = '', msg = {}} = data || {}
+    console.log(`service worker收到信息 type: ${type}; msg: ${JSON.stringify(msg)}`)
+
+    simpleEvent.trigger(type, msg)
+})

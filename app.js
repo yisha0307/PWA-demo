@@ -66,6 +66,13 @@ router.post('/push', koaBody(), async ctx => {
     };
 });
 
+router.get('/sync', async (ctx, next) => {
+    console.log(`hello ${ctx.request.query.name}, I have received your msg`)
+    ctx.response.body = {
+        status: 0
+    }
+})
+
 /**
  * 使用webpush
  * 向push service发送请求

@@ -138,17 +138,18 @@
     // 监听service worker的postmessage
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', function (e) {
-            const action = e.action
+            const action = e.data
             console.log(`receive post-message from sw, action is '${e.data}'`)
             switch (action) {
                 case 'show-book':
                     location.href = 'https://book.douban.com/subject/20515024/'
+                    console.log('HAHAHAHA')
                     break
                 case 'contact-me':
                     location.href = 'mailto:someone@sample.com'
                     break
                 default:
-                    document.querySelector('.panel').classList.add('show')
+                    document.querySelector('#result-field').textContent = 'DEFAULT'
                     break
             }
         })
@@ -216,4 +217,25 @@
             console.log(err)
         })
     }
+    // background sync 部分
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready.then(registration => {
+            const tag = 'sample_sync'
+            document.querySelector('#js-sync-btn').addEventListener('click', function () {
+                // registration.sync会返回一个syncManager对象
+                // 包含register和getTags两个方法
+                // register返回一个syncManager对象
+                registration.sync.register(tag).then(function () {
+                    console.log('后台同步已触发', tag)
+                    // 使用postMessage和sw通信
+                    const inputValue = document.querySelector('#book-search-input').value
+                    const msg = JSON.stringify({type: 'bgsync', msg: {name: inputValue}})
+                    navigator.serviceWorker.controller.postMessage(msg)
+                }).catch(err => {
+                    console.log(`后台同步触发失败 ${err}`)
+                })
+            })
+            
+        })   
+    } 
 })()
