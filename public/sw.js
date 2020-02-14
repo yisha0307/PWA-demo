@@ -123,8 +123,12 @@ self.addEventListener('notificationclick', function (e) {
         // 获取所有clients
         self.clients.matchAll().then(function (clients) {
             if (!clients || clients.length === 0) {
+                // 当不存在client的时候，打开该网站
+                self.clients.openWindow && self.clients.openWindow('http://127.0.0.1:8085')
                 return
             }
+            // 切换到该站点的tab
+            clients[0].focus && clients[0].focus()
             clients.forEach(function (client) {
                 // 使用postmessage通信
                 client.postMessage(e.action)
