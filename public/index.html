@@ -22,6 +22,9 @@
     <meta name="msapplication-square70x70logo" content="img/icons/book-72.png" />
     <meta name="msapplication-square150x150logo" content="img/icons/book-144.png" />
     <meta name="msapplication-square310x310logo" content="img/icons/book-256.png" />
+    <!-- 用preload先获取nextpage.js -->
+    <!-- 到body最后的script标签的时候再执行 -->
+    <link rel='preload' href='./nextpage.js' as='script'/>
 
     <title>PWA learning</title>
 </head>
@@ -38,5 +41,6 @@
     <button id = 'js-sync-db-btn'>后台同步(db)</button>
     <script type="text/javascript" src="./base64util.js"></script>
     <script type='text/javascript' src="./index.js"></script>
+    <script type='text/javascript' src='./nextpage.js'></script>
 </body>
 </html>
