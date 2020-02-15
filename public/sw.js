@@ -183,6 +183,37 @@ self.addEventListener('sync', function (e) {
                 return response
             })
         )
+    } else if (e.tag === 'sample_sync_db') {
+        const dbQueryPromise = new Promise((resolve, reject) => {
+            const STORE_NAME = 'SyncData'
+            openStore(STORE_NAME).then(db => {
+                try {
+                    const tx = db.transaction(STORE_NAME, 'readonly')
+                    const store = tx.objectStore(STORE_NAME)
+                    const dbRequest = store.get(e.tag)
+                    dbRequest.onsuccess = e => {
+                        resolve(e.target.result)
+                    }
+                    dbRequest.onerror = err => {
+                        reject(err)
+                    }
+                } catch (err) {
+                    reject(err)
+                }
+            })
+        })
+        e.waitUntil(
+            // 通过数据库查询获取需要同步的数据
+            dbQueryPromise.then(data => {
+                console.log(data)
+                const name = data && data.name ? data.name : 'anonymous'
+                const request = new Request(`sync?name=${name}`, init)
+                return fetch(request)
+            }).then(response => {
+                response.json().then(console.log.bind(console))
+                return response
+            })
+        )
     }
 })
 
@@ -193,3 +224,22 @@ self.addEventListener('message', function (e) {
 
     simpleEvent.trigger(type, msg)
 })
+/**
+ *
+ *
+ * @param {string} storeName 存储的名字
+ * @returns {Promise}
+ */
+function openStore (storeName) {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('PWA_DB', 1)
+        request.onerror = e => {
+            console.log('连接数据库失败')
+            reject(e)
+        }
+        request.onsuccess = e => {
+            console.log('连接数据库成功')
+            resolve(e.target.result)
+        }
+    })
+}

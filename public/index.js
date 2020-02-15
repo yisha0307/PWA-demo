@@ -218,6 +218,7 @@
         })
     }
     // background sync 部分
+    const STORE_NAME = 'SyncData'
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
         navigator.serviceWorker.ready.then(registration => {
             const tag = 'sample_sync'
@@ -234,8 +235,67 @@
                 }).catch(err => {
                     console.log(`后台同步触发失败 ${err}`)
                 })
+            })        
+        })
+        // 使用indexedDB储存数据
+        navigator.serviceWorker.ready.then(registration => {
+            return Promise.all([
+                openStore(STORE_NAME),
+                registration
+            ])
+        }).then(result => {
+            const db = result[0]
+            const registration = result[1]
+            const tag = 'sample_sync_db'
+
+            document.querySelector('#js-sync-db-btn').addEventListener('click', () => {
+                const inputvalue = document.getElementById('book-search-input').value
+                let tx = db.transaction(STORE_NAME, 'readwrite')
+                let store = tx.objectStore(STORE_NAME)
+                let item = {
+                    tag,
+                    name: inputvalue
+                }
+                store.put(item)
+
+                registration.sync.register(tag).then(() => {
+                    console.log('后台同步已触发，', tag)
+                }).catch(err => {
+                    console.log('后台同步触发发生错误，', err)
+                })
             })
-            
-        })   
+        })
     } 
+    // 使用indexedDB 
+    // localStorage无法在service worker里用
+    function openStore (storeName) {
+        return new Promise(function (resolve, reject) {
+            if (!'indexedDB' in window) {
+                reject(`cannot support indexedDB`)
+            }
+            const request = indexedDB.open('PWA_DB', 1)
+            request.onerror = function (e) {
+                console.log('连接数据库失败')
+                reject(e)
+            }
+            request.onsuccess = function (e) {
+                console.log('数据库连接成功')
+                resolve(e.target.result)
+            }
+            request.onupgradeneeded = function (e) {
+                console.log('数据库版本升级')
+                const db = e.srcElement.result
+                if (e.oldVersion === 0) {
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        var store = db.createObjectStore(storeName, {
+                            keyPath: 'tag'
+                        })
+                        store.createIndex(storeName + 'Index', 'tag', {unique: false})
+                        console.log('创建索引成功')
+                    }
+                }
+            }
+        })
+    }
+    
 })()
